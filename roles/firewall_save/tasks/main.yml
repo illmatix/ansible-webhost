@@ -1,0 +1,5 @@
+---
+- name: Install IPTables Persistent
+  apt: pkg=iptables-persistent state=present
+- name: Save IPTables
+  command: /etc/init.d/iptables-persistent save

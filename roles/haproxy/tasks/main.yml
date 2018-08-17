@@ -1,0 +1,26 @@
+---
+- name: Install dependencies
+  apt: pkg={{ item }} state=present
+  with_items:
+  - libpcre3-dev
+  - zlib1g-dev
+- name: Install HAProxy 1.5 PPA
+  apt_repository: repo='ppa:vbernat/haproxy-1.5'
+- name: Install HAProxy 1.5
+  apt: pkg=haproxy state=latest
+- name: Configure HAProxy
+  template: src=haproxy.cfg.j2 dest=/etc/haproxy/haproxy.cfg
+  notify: reload haproxy
+- name: Allow HAProxy through UFW
+  ufw: rule=allow port={{ item }}
+  with_items:
+  - "{{ haproxy_port }}"
+  - "{{ haproxy_ssl_port }}"
+
+- name: Check if Logstash Forwarder has been installed
+  stat: path=/etc/logstash-forwarder.d/
+  register: logstash_enabled
+- name: Enable Logstash config for access and error logs
+  sudo: yes
+  template: src=logstash.j2 dest=/etc/logstash-forwarder.d/haproxy
+  when: logstash_enabled.stat.isdir is defined and logstash_enabled.stat.isdir == true

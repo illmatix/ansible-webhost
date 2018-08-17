@@ -1,0 +1,13 @@
+---
+- name: Run the Firewall Install tasks
+  include: install.yml
+
+# Insert our allowed IPs as the first entries
+- name: Allow select IPs unrestricted SSH access
+  ufw: rule=allow port=22 src={{ item }}
+  with_items: management_ips
+# Insert our limit as the next entry after our allowed SSH IPs
+- name: Limit SSH Brute Force
+  ufw: rule=limit port=22
+- name: Enable UFW
+  ufw: state=enabled

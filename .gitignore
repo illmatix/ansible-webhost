@@ -1,0 +1,5 @@
+.vagrant/
+roles/ssh/files/keys
+website_overrides/
+inventory/config.php
+ssl_certs

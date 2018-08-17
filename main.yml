@@ -1,0 +1,42 @@
+---
+- hosts: all
+  sudo: True
+  roles:
+  - firewall
+  - ssh
+
+- hosts: all
+  sudo: True
+  roles:
+  - base
+  - git
+
+- hosts: webserver
+  roles:
+  - websites
+
+- hosts: webserver
+  sudo: True
+  roles:
+  - ssl
+  - { role: nginx,   when: nginx   == true }
+  - { role: varnish, when: varnish == true }
+  - { role: haproxy, when: haproxy == true }
+  - php
+
+- hosts: database
+  sudo: True
+  roles:
+  - mysql
+
+- hosts: development
+  sudo: True
+  roles:
+  - node
+  - development
+  - mailblock
+
+- hosts: all
+  sudo: True
+  roles:
+  - firewall_save

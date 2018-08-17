@@ -1,0 +1,47 @@
+---
+- name: Get PHP PPA
+  apt_repository: repo="ppa:ondrej/php5"
+
+- name: Install PHP
+  apt: pkg=php5 state=present
+- name: Install PHP Extensions
+  apt: pkg={{ item }} state=present
+  with_items:
+  - "php5-curl"
+  - "php5-mcrypt"
+  - "php5-gd"
+  - "php5-imap"
+  - "php5-intl"
+  - "php5-xmlrpc"
+  - "php5-dev"
+  - "php5-mysql"
+  - php-pear
+  - mysql-client
+  notify:
+  - restart php-fpm
+- name: Install PHP Extensions for Developers
+  apt: pkg={{ item }} state=present
+  with_items:
+  - "php5-xhprof"
+  - "php5-xdebug"
+  when: "'development' in group_names"
+  notify:
+  - restart php-fpm
+
+- name: Configure xdebug.ini
+  copy: src=xdebug.ini dest={{ php_mod_config }}/xdebug.ini
+  when: "'development' in group_names"
+  notify:
+  - restart php-fpm
+
+- name: Ensure sessions folder exists
+  file: path={{ php_sessions }} state=directory mode=1733
+  notify:
+  - restart php-fpm
+
+- name: Run PHP FPM Tasks
+  include: fpm.yml
+  when: nginx
+
+- name: Run Drush Tasks
+  include: drush.yml
